@@ -1,5 +1,7 @@
 FROM php:fpm-alpine3.20
 
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 RUN apk --no-cache add \
     libpng-dev \
     libjpeg-turbo-dev \
@@ -18,10 +20,8 @@ WORKDIR /var/www/html
 
 COPY . .
 
-RUN composer install
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
-RUN composer require laravel/sail --dev && php artisan sail:install
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-RUN php artisan key:generate
-
-RUN chown -R www-data:www-data /var/www/html
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
