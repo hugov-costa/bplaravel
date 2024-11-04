@@ -21,14 +21,15 @@ use Laravel\Fortify\Contracts\LogoutResponse;
 use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Fortify;
 use Laravel\Sanctum\PersonalAccessToken;
+use Symfony\Component\HttpFoundation\Response;
 
 class FortifyServiceProvider extends ServiceProvider
 {
-    private function loginResponse()
+    private function loginResponse(): void
     {
         $this->app->instance(LoginResponse::class, new class implements LoginResponse
         {
-            public function toResponse($request)
+            public function toResponse($request): Response
             {
                 if (PersonalAccessToken::findToken($request->bearerToken())?->tokenable_id && $request->user()?->id) {
                     return response()->json([
@@ -50,7 +51,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         $this->app->instance(LogoutResponse::class, new class implements LogoutResponse
         {
-            public function toResponse($request)
+            public function toResponse($request): Response
             {
                 $request->user()->currentAccessToken()->delete();
 
@@ -63,7 +64,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         $this->app->instance(RegisterResponse::class, new class implements RegisterResponse
         {
-            public function toResponse($request)
+            public function toResponse($request): Response
             {
                 $user = User::where('email', $request->email)->first();
 
@@ -81,7 +82,6 @@ class FortifyServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->loginResponse();
-
         $this->registerResponse();
     }
 
@@ -100,7 +100,7 @@ class FortifyServiceProvider extends ServiceProvider
                 });
         });
 
-        Fortify::authenticateThrough(function (Request $request) {
+        Fortify::authenticateThrough(function () {
             return array_filter([
                 config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
                 config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
