@@ -12,6 +12,6 @@ class ResetPasswordController extends Controller
         return response()->json([
             'email' => $request->email,
             'token' => $request->token,
-        ]);
+        ], 200);
     }
 }
