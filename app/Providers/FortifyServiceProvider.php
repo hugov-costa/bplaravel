@@ -28,6 +28,19 @@ use Symfony\Component\HttpFoundation\Response;
 
 class FortifyServiceProvider extends ServiceProvider
 {
+    private function limitRate(string $action, int $rate, string $message): void
+    {
+        RateLimiter::for($action, function (Request $request) use ($rate, $message) {
+            return Limit::perMinute($rate)
+                ->by(Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip()))
+                ->response(function () use ($message) {
+                    return response()->json([
+                        'message' => $message,
+                    ], 429);
+                });
+        });
+    }
+
     private function loginResponse(): void
     {
         $this->app->instance(LoginResponse::class, new class implements LoginResponse
@@ -131,15 +144,7 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(6)
-                ->by(Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip()))
-                ->response(function () {
-                    return response()->json([
-                        'message' => 'Too many login attempts.',
-                    ], 429);
-                });
-        });
+        $this->limitRate('login', 6, 'Too many login attempts.');
 
         Fortify::authenticateThrough(function () {
             return array_filter([
