@@ -18,6 +18,7 @@ use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Contracts\LogoutResponse;
+use Laravel\Fortify\Contracts\PasswordUpdateResponse;
 use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Fortify;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -55,7 +56,9 @@ class FortifyServiceProvider extends ServiceProvider
             {
                 $request->user()->currentAccessToken()->delete();
 
-                return response()->json(['message' => 'Successfully logged out.'], 200);
+                return response()->json([
+                    'message' => 'Successfully logged out.',
+                ], 200);
             }
         });
     }
@@ -76,6 +79,19 @@ class FortifyServiceProvider extends ServiceProvider
         });
     }
 
+    private function updatePasswordResponse(): void
+    {
+        $this->app->instance(PasswordUpdateResponse::class, new class implements PasswordUpdateResponse
+        {
+            public function toResponse($request): Response
+            {
+                return response()->json([
+                    'message' => 'Password successfully updated.',
+                ], 200);
+            }
+        });
+    }
+
     /**
      * Register any application services.
      */
@@ -83,6 +99,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         $this->loginResponse();
         $this->registerResponse();
+        $this->updatePasswordResponse();
     }
 
     /**
