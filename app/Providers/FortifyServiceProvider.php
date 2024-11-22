@@ -9,6 +9,7 @@ use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -18,6 +19,8 @@ use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Contracts\LogoutResponse;
+use Laravel\Fortify\Contracts\PasswordUpdateResponse;
+use Laravel\Fortify\Contracts\ProfileInformationUpdatedResponse;
 use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Fortify;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -25,6 +28,19 @@ use Symfony\Component\HttpFoundation\Response;
 
 class FortifyServiceProvider extends ServiceProvider
 {
+    private function limitRate(string $action, int $rate, string $message): void
+    {
+        RateLimiter::for($action, function (Request $request) use ($rate, $message) {
+            return Limit::perMinute($rate)
+                ->by(Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip()))
+                ->response(function () use ($message) {
+                    return response()->json([
+                        'message' => $message,
+                    ], 429);
+                });
+        });
+    }
+
     private function loginResponse(): void
     {
         $this->app->instance(LoginResponse::class, new class implements LoginResponse
@@ -55,7 +71,9 @@ class FortifyServiceProvider extends ServiceProvider
             {
                 $request->user()->currentAccessToken()->delete();
 
-                return response()->json(['message' => 'Successfully logged out.'], 200);
+                return response()->json([
+                    'message' => 'Successfully logged out.',
+                ], 200);
             }
         });
     }
@@ -76,13 +94,49 @@ class FortifyServiceProvider extends ServiceProvider
         });
     }
 
+    private function profileInformationUpdatedResponse(): void
+    {
+        $this->app
+            ->instance(ProfileInformationUpdatedResponse::class, new class implements ProfileInformationUpdatedResponse
+            {
+                public function toResponse($request): Response
+                {
+                    if (Hash::check($request->password, $request->user()?->password)) {
+                        return response()->json([
+                            'message' => 'Profile information successfully updated.',
+                        ], 200);
+                    }
+
+                    return response()->json([
+                        'message' => 'The provided password does not match your current password.',
+                    ], 422);
+                }
+            });
+    }
+
+    private function updatePasswordResponse(): void
+    {
+        $this->app->instance(PasswordUpdateResponse::class, new class implements PasswordUpdateResponse
+        {
+            public function toResponse($request): Response
+            {
+                return response()->json([
+                    'message' => 'Password successfully updated.',
+                ], 200);
+            }
+        });
+    }
+
     /**
      * Register any application services.
      */
     public function register(): void
     {
         $this->loginResponse();
+        $this->logoutResponse();
+        $this->profileInformationUpdatedResponse();
         $this->registerResponse();
+        $this->updatePasswordResponse();
     }
 
     /**
@@ -90,15 +144,7 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(6)
-                ->by(Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip()))
-                ->response(function () {
-                    return response()->json([
-                        'message' => 'Too many login attempts.',
-                    ], 429);
-                });
-        });
+        $this->limitRate('login', 6, 'Too many login attempts.');
 
         Fortify::authenticateThrough(function () {
             return array_filter([
@@ -112,7 +158,5 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
-
-        $this->logoutResponse();
     }
 }
