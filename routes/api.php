@@ -9,6 +9,7 @@ use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use Laravel\Fortify\Http\Controllers\NewPasswordController;
 use Laravel\Fortify\Http\Controllers\PasswordController;
 use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
+use Laravel\Fortify\Http\Controllers\ProfileInformationController;
 use Laravel\Fortify\Http\Controllers\RegisteredUserController;
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
@@ -34,6 +35,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
             ->withoutMiddleware('auth:sanctum');
         Route::put('/user/password', [PasswordController::class, 'update'])
             ->name('user-password.update');
+        Route::put('/user/profile-information', [ProfileInformationController::class, 'update'])
+            ->name('user-profile-information.update');
     });
 
     Route::get('/oio', [UserController::class, 'index']);
