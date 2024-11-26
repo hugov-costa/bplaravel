@@ -1,3 +1,5 @@
+#!/bin/sh
+
 if [ ! -d "vendor" ]; then
     composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 fi

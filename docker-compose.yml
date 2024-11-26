@@ -52,29 +52,35 @@ services:
         networks:
             - sail
     redis:
-        image: redis:alpine
+        image: 'redis:alpine'
         ports:
-            - "6379:6379"
+            - '6379:6379'
         volumes:
-            - ./redis.conf:/usr/local/etc/redis/redis.conf
-        command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+            - './redis.conf:/usr/local/etc/redis/redis.conf'
+        command:
+            - redis-server
+            - /usr/local/etc/redis/redis.conf
         networks:
             - sail
     minio:
         image: minio/minio
         environment:
-            MINIO_ACCESS_KEY: ${AWS_ACCESS_KEY_ID}
-            MINIO_SECRET_KEY: ${AWS_SECRET_ACCESS_KEY}
+            MINIO_ACCESS_KEY: '${AWS_ACCESS_KEY_ID}'
+            MINIO_SECRET_KEY: '${AWS_SECRET_ACCESS_KEY}'
         volumes:
             - './docker/minio:/etc/minio'
         ports:
-            - "9000:9000"
-            - "9001:9001"
-        command: server /data --console-address ":9001"
+            - '9000:9000'
+            - '9001:9001'
+        command: 'server /data --console-address ":9001"'
         networks:
             - sail
         healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+            test:
+                - CMD
+                - curl
+                - '-f'
+                - 'http://localhost:9000/minio/health/live'
             interval: 5s
             timeout: 3s
             retries: 5
@@ -84,21 +90,15 @@ services:
             minio:
                 condition: service_healthy
         environment:
-            AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-            AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-            AWS_BUCKET_PUBLIC: "public-bucket"
-            AWS_BUCKET_PRIVATE: "private-bucket"
+            AWS_ACCESS_KEY_ID: '${AWS_ACCESS_KEY_ID}'
+            AWS_SECRET_ACCESS_KEY: '${AWS_SECRET_ACCESS_KEY}'
+            AWS_BUCKET_PUBLIC: public-bucket
+            AWS_BUCKET_PRIVATE: private-bucket
         volumes:
             - './docker/minio:/etc/minio'
         networks:
             - sail
-        entrypoint: >
-            /bin/sh -c "
-            while ! mc alias set myminio http://minio:9000 ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY}; do
-                sleep 1;
-            done;
-            /etc/minio/create_buckets.sh
-            "
+        entrypoint: "/bin/sh -c \" while ! mc alias set myminio http://minio:9000 ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY}; do\n    sleep 1;\ndone; /etc/minio/create_buckets.sh \"\n"
 networks:
     sail:
         driver: bridge
