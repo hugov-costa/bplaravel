@@ -1,19 +1,30 @@
+readme
 ## Laravel API Boilerplate
 This is a Laravel API boilerplate using Docker/Sail still in early development. I aim to make an API developing faster and easier, skipping most of the user account management, as well as authentication. At first, this is a project made for personal use, but feel free to use, change and, well, really do anything you want with it!
 
 ## Install dependencies and run application
 
 - Install Docker;
-- In docker-compose.yml, change 'app' to 'laravel.test';
 - Run the following commands to both install dependencies and sail:
     ```
-    docker build -t image-name .
+    docker build -t image-name . --no-cache
     docker run --rm -v $(pwd):/var/www/html image-name
     ```
-- In docker-compose.yml, change back 'laravel.test' to 'app';
+- If necessary, grant permissions to your user:
+    ```
+    sudo chown -R $(whoami):$(whoami) .
+    ```
 - Run the following command to build (single time) and run the application:
     ```
-    ./vendor/bin/sail up -d
+    sail up -d
+    ```
+- Generate the application key:
+    ```
+    sail artisan key:generate
+    ```
+- Migrate the database tables:
+    ```
+    sail artisan migrate
     ```
 
 ### Optional
