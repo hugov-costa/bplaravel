@@ -14,17 +14,17 @@ This is a Laravel API boilerplate using Docker/Sail still in early development. 
     ```
     sudo chown -R $(whoami):$(whoami) .
     ```
-- Run the following command to build (single time) and run the application:
+- Run the following command to build (built only once) and run the application:
     ```
-    sail up -d
+    ./vendor/bin/sail up -d
     ```
 - Generate the application key:
     ```
-    sail artisan key:generate
+    ./vendor/bin/sail artisan key:generate
     ```
 - Migrate the database tables:
     ```
-    sail artisan migrate
+    ./vendor/bin/sail artisan migrate
     ```
 
 ### Optional
