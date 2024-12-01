@@ -5,6 +5,7 @@ This is a Laravel API boilerplate using Docker/Sail still in early development. 
 ## Install dependencies and run application
 
 - Install Docker;
+- Set the .env;
 - Run the following commands to both install dependencies and sail:
     ```
     docker build -t image-name . --no-cache

@@ -2,14 +2,13 @@
 
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
-use App\Http\Controllers\ResetPasswordController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\User\ResetPasswordController;
+use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use Laravel\Fortify\Http\Controllers\NewPasswordController;
 use Laravel\Fortify\Http\Controllers\PasswordController;
 use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
-use Laravel\Fortify\Http\Controllers\ProfileInformationController;
 use Laravel\Fortify\Http\Controllers\RegisteredUserController;
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
@@ -35,7 +34,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
             ->withoutMiddleware('auth:sanctum');
         Route::put('/user/password', [PasswordController::class, 'update'])
             ->name('user-password.update');
-        Route::put('/user/profile-information', [ProfileInformationController::class, 'update'])
+        Route::put('/user/profile-information', [UserController::class, 'update'])
             ->name('user-profile-information.update');
     });
 
