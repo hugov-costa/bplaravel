@@ -31,6 +31,16 @@ class UpdateUserProfileInformationRequest extends FormRequest
                 'max:255',
                 Rule::unique('users')->ignore($this->user()->id),
             ],
+            'files' => [
+                'nullable',
+                'array',
+                'max:1',
+            ],
+            'files.*' => [
+                'file',
+                'extensions:jpg,jpeg,png',
+                'mimes:jpg,jpeg,png',
+            ],
             'name' => [
                 'nullable',
                 'string',
@@ -38,7 +48,7 @@ class UpdateUserProfileInformationRequest extends FormRequest
                 'max:255',
             ],
             'password' => [
-                'nullable',
+                'required_with:email',
                 'string',
                 new MatchUserPassword,
             ],
