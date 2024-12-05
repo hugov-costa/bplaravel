@@ -44,6 +44,7 @@ return [
             'bucket' => env('AWS_BUCKET_PUBLIC'),
             'endpoint' => env('AWS_ENDPOINT'),
             'visibility' => 'public',
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', true),
         ],
 
         'private' => [
@@ -54,6 +55,7 @@ return [
             'bucket' => env('AWS_BUCKET_PRIVATE'),
             'endpoint' => env('AWS_ENDPOINT'),
             'visibility' => 'private',
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', true),
         ],
 
         's3' => [
@@ -64,7 +66,7 @@ return [
             'bucket' => env('AWS_BUCKET'),
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', true),
             'throw' => false,
         ],
 

@@ -13,6 +13,7 @@ class UpdateUserProfileInformationRequest extends FormRequest
     {
         $this->merge([
             'name' => Str::title($this->name),
+            'remove_profile_image' => boolval($this->remove_profile_image),
         ]);
     }
 
@@ -31,6 +32,17 @@ class UpdateUserProfileInformationRequest extends FormRequest
                 'max:255',
                 Rule::unique('users')->ignore($this->user()->id),
             ],
+            'files' => [
+                'nullable',
+                'array',
+                'max:1',
+            ],
+            'files.*' => [
+                'file',
+                'extensions:jpg,jpeg,png',
+                'mimes:jpg,jpeg,png',
+                'max:3072',
+            ],
             'name' => [
                 'nullable',
                 'string',
@@ -38,9 +50,13 @@ class UpdateUserProfileInformationRequest extends FormRequest
                 'max:255',
             ],
             'password' => [
-                'nullable',
+                'required_with:email',
                 'string',
                 new MatchUserPassword,
+            ],
+            'remove_profile_image' => [
+                'required',
+                'boolean',
             ],
         ];
     }
