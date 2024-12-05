@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Notifications\Notifiable;
 
 class File extends Model
@@ -43,5 +44,10 @@ class File extends Model
             'size' => 'integer',
             'visibility' => 'string',
         ];
+    }
+
+    public function fileable(): MorphTo
+    {
+        return $this->morphTo();
     }
 }
